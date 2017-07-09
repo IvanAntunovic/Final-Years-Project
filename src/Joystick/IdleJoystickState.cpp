@@ -1,6 +1,7 @@
 #include "IdleJoystickState.h"
 #include "PasswordLoggerJoystickMode.h"
 #include "EEPROM.h"
+#include "JoystickMode.h"
 
 JoystickState* IdleJoystickState::sInstance = NULL;
 
@@ -16,43 +17,43 @@ JoystickState * IdleJoystickState::getInstance()
 void IdleJoystickState::handleCoordinates(int nX, int nY, Joystick & joystick)
 {
 	int8_t retVal;
+	JoystickMode* currentJoystickMode;
 
 	retVal = joystick.getZone(nX, nY);
 	if (retVal == NOT_IN_DEADZONE)
 	{	
+		currentJoystickMode = joystick.getCurrentMode();
 		if (nX > MAX_X_POSITION)
 		{
 			joystick.changeState( RightJoystickState::getInstance() );
-			if ( joystick.getCurrentMode() == PasswordLoggerJoystickMode::getInstance() )
+			if ( currentJoystickMode == PasswordLoggerJoystickMode::getInstance() )
 			{
-				joystick.getCurrentMode()->handle(joystick);
+				joystick.storePasswordPositionInEEPROM();
 			}
 		}
 		else if (nX < MIN_X_POSITION)
 		{
 			joystick.changeState( LeftJoystickState::getInstance() );
-			if ( joystick.getCurrentMode() == PasswordLoggerJoystickMode::getInstance() )
+			if ( currentJoystickMode == PasswordLoggerJoystickMode::getInstance() )
 			{
-				joystick.getCurrentMode()->handle(joystick);
+				joystick.storePasswordPositionInEEPROM();
 			}
-
 		}
 		else if (nY > MAX_Y_POSITION)
 		{
 			joystick.changeState( DownJoystickState::getInstance() );
-			if ( joystick.getCurrentMode() == PasswordLoggerJoystickMode::getInstance() )
+			if ( currentJoystickMode == PasswordLoggerJoystickMode::getInstance() )
 			{
-				joystick.getCurrentMode()->handle(joystick);
+				joystick.storePasswordPositionInEEPROM();
 			}
 		}
 		else if (nY < MIN_Y_POSITION)
 		{
 			joystick.changeState( UpJoystickState::getInstance() );
-			if ( joystick.getCurrentMode() == PasswordLoggerJoystickMode::getInstance() )
+			if ( currentJoystickMode == PasswordLoggerJoystickMode::getInstance() )
 			{
-				joystick.getCurrentMode()->handle(joystick);
+				joystick.storePasswordPositionInEEPROM();
 			}
-
 		}
 	}
 	else if (retVal == IN_DEADZONE)
@@ -63,7 +64,6 @@ void IdleJoystickState::handleCoordinates(int nX, int nY, Joystick & joystick)
 	{
 		//Serial.println("Invalid parameters!" );
 	}
-	
 }
 
 

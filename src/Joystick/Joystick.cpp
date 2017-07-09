@@ -8,9 +8,10 @@ Joystick::Joystick(uint8_t xPin, uint8_t yPin, uint8_t passwordLength)
 	this->xPin = xPin;
 	this->yPin = yPin;
 	this->passwordLength = passwordLength;
-	this->isPasswordSet = false;
+
 	this->currentState = IdleJoystickState::getInstance();
 	this->currentMode = PasswordVerificationJoystickMode::getInstance();
+	
 	memset ( this->passwordPositionBuffer, NULL, passwordLength );
 }
 
@@ -36,38 +37,6 @@ int8_t Joystick::getZone(int nX, int nY)
 		return NOT_IN_DEADZONE;
 	}
 	return IN_DEADZONE;
-}
-
-void Joystick::printCurrentPositions(void)
-{
-	
-	Serial.println("You have entered the following positions: ");
-	for (uint8_t currentPosition = PASSWORD_LOGGER_TEMP_MEMORY_START_INDEX; currentPosition < PASSWORD_LOGGER_TEMP_MEMORY_START_INDEX + this->passwordLength; ++currentPosition)
-	{
-		Serial.print(currentPosition);
-		Serial.print(".: ");
-		if (EEPROM.read(currentPosition) == eRight)
-		{
-			Serial.println("Right Position");
-		}
-		else if (EEPROM.read(currentPosition) == eLeft)
-		{
-			Serial.println("Left Position");
-		}
-		else if (EEPROM.read(currentPosition) == eUp)
-		{
-			Serial.println("Up Position");
-		}
-		else if (EEPROM.read(currentPosition) == eDown) 
-		{
-			Serial.println("Down Position");
-		}
-		else
-		{
-			Serial.println("Unknown Position");
-		}
-	}
-	Serial.println("");
 }
 
 int8_t Joystick::getPosition(void)
@@ -108,33 +77,35 @@ int8_t Joystick::getPosition(void)
 
 int8_t Joystick::logPassword(void)
 {
-	int8_t currentPosition;
-	int8_t bufferFreeIndexNum;
-
 	if ( this->currentMode != PasswordLoggerJoystickMode::getInstance() )
 	{
 		this->currentMode = PasswordLoggerJoystickMode::getInstance();
+		memset ( this->passwordPositionBuffer, NULL, passwordLength );
 	}
-	
-	currentPosition = this->getPosition();
-	if ( this->currentState == IdleJoystickState::getInstance() )
+	this->getPosition();
+	/*if ( this->currentMode == PasswordVerificationJoystickMode::getInstance() )
 	{
-		return JOYSTICK_LOG_NOT_MOVED;
-	}
+		return JOYSTICK_LOG_PASSWORD_SET;
+	}*/
 	
-	if ( currentPosition ==  eInvalidJoystickState )
-	{
-		return JOYSTICK_LOG_PASSWORD_NOK;
-	}
-	
-	bufferFreeIndexNum = getBufferFreeIndex();
-	if ( bufferFreeIndexNum == JOYSTICK_NOK )
+	if (this->passwordPositionBuffer[3] != NULL)
 	{
 		return JOYSTICK_LOG_PASSWORD_SET;
 	}
-	
-	this->passwordPositionBuffer[bufferFreeIndexNum] = this->currentState;
 	return JOYSTICK_LOG_PASSWORD_NOT_SET;
+}
+
+void Joystick::storePasswordPositionInEEPROM()
+{
+	int8_t bufferFreeIndexNum;
+	
+	bufferFreeIndexNum = getBufferFreeIndex();
+	this->passwordPositionBuffer[bufferFreeIndexNum] = this->currentState;
+	if ( bufferFreeIndexNum == JOYSTICK_NOK )
+	{
+		this->currentMode = PasswordVerificationJoystickMode::getInstance();
+		this->storePasswordInEEPROM();
+	}
 }
 
 int8_t Joystick::getBufferFreeIndex()
@@ -152,5 +123,68 @@ int8_t Joystick::getBufferFreeIndex()
 		}
 	}
 	return JOYSTICK_NOK;
+}
+
+void Joystick::storePasswordInEEPROM(void)
+{
+	for (uint8_t currentPosition = 0; currentPosition < this->passwordLength; ++currentPosition)
+	{
+		if (this->passwordPositionBuffer[currentPosition] == RightJoystickState::getInstance())
+		{
+			Serial.println("Right");
+			EEPROM.write(currentPosition, eRight);
+		}
+		else if (this->passwordPositionBuffer[currentPosition] == LeftJoystickState::getInstance())
+		{
+			Serial.println("Left");
+			EEPROM.write(currentPosition, eLeft);
+		}
+		else if (this->passwordPositionBuffer[currentPosition] == UpJoystickState::getInstance())
+		{
+			Serial.println("Up");
+			EEPROM.write(currentPosition, eUp);
+		}
+		else if (this->passwordPositionBuffer[currentPosition] == DownJoystickState::getInstance()) 
+		{
+			Serial.println("Down");
+			EEPROM.write(currentPosition, eDown);
+		}
+		else
+		{
+			Serial.println("Error while storing password in EEPROM - Unknown Position");
+		}
+	}
+}
+
+void Joystick::printCurrentPositions(void)
+{
+	
+	Serial.println("You have entered the following positions: ");
+	for (uint8_t currentPosition = 0; currentPosition < this->passwordLength; ++currentPosition)
+	{
+		Serial.print(currentPosition);
+		Serial.print(".: ");
+		if (EEPROM.read(currentPosition) == eRight)
+		{
+			Serial.println("Right Position");
+		}
+		else if (EEPROM.read(currentPosition) == eLeft)
+		{
+			Serial.println("Left Position");
+		}
+		else if (EEPROM.read(currentPosition) == eUp)
+		{
+			Serial.println("Up Position");
+		}
+		else if (EEPROM.read(currentPosition) == eDown) 
+		{
+			Serial.println("Down Position");
+		}
+		else
+		{
+			Serial.println("Unknown Position");
+		}
+	}
+	Serial.println("");
 }
 
