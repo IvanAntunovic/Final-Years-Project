@@ -27,8 +27,8 @@ private:
 public:
 	Joystick(uint8_t xPin, uint8_t yPin, uint8_t passwordLength);
 	int8_t logPassword(void);
-	void verifyPassword(void);
-	int8_t getPosition();
+	int8_t verifyPassword(void);
+	int8_t getPosition(void);
 	
 	JoystickMode* getCurrentMode() {return this->currentMode;}
 	JoystickState* getCurrentState() {return this->currentState;}
@@ -44,7 +44,7 @@ public:
 	friend class IdleJoystickState;
 	
 private:
-	bool isEqualToEEPROM(void);
+	bool isPasswordEqualToEEPROM(void);
 	void storePasswordInEEPROM(void);
 	void changeMode(uint8_t newMode);
 	int8_t getBufferFreeIndex();

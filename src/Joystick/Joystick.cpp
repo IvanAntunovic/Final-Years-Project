@@ -80,20 +80,48 @@ int8_t Joystick::logPassword(void)
 	if ( this->currentMode != PasswordLoggerJoystickMode::getInstance() )
 	{
 		this->currentMode = PasswordLoggerJoystickMode::getInstance();
-		memset ( this->passwordPositionBuffer, NULL, passwordLength );
+		memset ( this->passwordPositionBuffer, NULL, this->passwordLength );
 	}
-	this->getPosition();
-	/*if ( this->currentMode == PasswordVerificationJoystickMode::getInstance() )
-	{
-		return JOYSTICK_LOG_PASSWORD_SET;
-	}*/
 	
+	this->getPosition();
 	if (this->passwordPositionBuffer[3] != NULL)
 	{
 		this->storePasswordInEEPROM();
+		memset ( this->passwordPositionBuffer, NULL, this->passwordLength );
 		return JOYSTICK_LOG_PASSWORD_SET;
 	}
 	return JOYSTICK_LOG_PASSWORD_NOT_SET;
+}
+
+int8_t Joystick::verifyPassword(void)
+{
+	bool isEqual;
+	if ( this->currentMode != PasswordVerificationJoystickMode::getInstance() )
+	{
+		this->currentMode = PasswordVerificationJoystickMode::getInstance();
+		//memset ( this->passwordPositionBuffer, NULL, passwordLength );
+		Serial.print("Printanje buffera duljine ... ");
+		Serial.println(this->passwordLength);
+		
+		for (int index = 0; index < this->passwordLength; ++index)
+		{
+			this->passwordPositionBuffer[index] = NULL;
+		}
+	}
+
+	this->getPosition();
+	if (this->passwordPositionBuffer[3] != NULL)
+	{
+		isEqual = this->isPasswordEqualToEEPROM();
+		if ( isEqual )
+		{
+			memset ( this->passwordPositionBuffer, NULL, this->passwordLength );
+			return JOYSTICK_VERIFICATION_PASSWORD_OK;
+		}
+		memset ( this->passwordPositionBuffer, NULL, this->passwordLength );
+		return JOYSTICK_VERIFICATION_PASSWORD_NOK;
+	}
+	return JOYSTICK_VERIFICATION_PASSWORD_VERIFICATION_NOT_FINISHED;
 }
 
 void Joystick::storePasswordPositionInEEPROM()
@@ -111,7 +139,7 @@ void Joystick::storePasswordPositionInEEPROM()
 
 int8_t Joystick::getBufferFreeIndex()
 {
-	if (this->passwordPositionBuffer[2] != NULL && this->passwordPositionBuffer[3] == IdleJoystickState::getInstance())
+	if (this->passwordPositionBuffer[this->passwordLength - 2] != NULL && this->passwordPositionBuffer[this->passwordLength - 1] == IdleJoystickState::getInstance())
 	{
 		return JOYSTICK_NOK;
 	}
@@ -128,26 +156,24 @@ int8_t Joystick::getBufferFreeIndex()
 
 void Joystick::storePasswordInEEPROM(void)
 {
-	for (uint8_t currentPosition = 0; currentPosition < this->passwordLength; ++currentPosition)
+	uint8_t currentPosition;
+	
+	for (currentPosition = 0; currentPosition < this->passwordLength; ++currentPosition)
 	{
 		if (this->passwordPositionBuffer[currentPosition] == RightJoystickState::getInstance())
 		{
-			Serial.println("EEPROM Stored Right");
 			EEPROM.write(currentPosition, eRight);
 		}
 		else if (this->passwordPositionBuffer[currentPosition] == LeftJoystickState::getInstance())
 		{
-			Serial.println("EEPROM Stored Left");
 			EEPROM.write(currentPosition, eLeft);
 		}
 		else if (this->passwordPositionBuffer[currentPosition] == UpJoystickState::getInstance())
 		{
-			Serial.println("EEPROM Stored Up");
 			EEPROM.write(currentPosition, eUp);
 		}
 		else if (this->passwordPositionBuffer[currentPosition] == DownJoystickState::getInstance()) 
 		{
-			Serial.println("EEPROM Stored Down");
 			EEPROM.write(currentPosition, eDown);
 		}
 		else
@@ -157,9 +183,46 @@ void Joystick::storePasswordInEEPROM(void)
 	}
 }
 
+bool Joystick::isPasswordEqualToEEPROM(void)
+{
+	uint8_t* tempBuffer;
+	
+	tempBuffer = new uint8_t[this->passwordLength];
+	for (int currentPosition = 0; currentPosition < this->passwordLength; ++currentPosition)
+	{
+		if (this->passwordPositionBuffer[currentPosition] == RightJoystickState::getInstance())
+		{
+			tempBuffer[currentPosition] = eRight;
+		}
+		else if (this->passwordPositionBuffer[currentPosition] == LeftJoystickState::getInstance())
+		{
+			tempBuffer[currentPosition] = eLeft;
+		}
+		else if (this->passwordPositionBuffer[currentPosition] == UpJoystickState::getInstance())
+		{
+			tempBuffer[currentPosition] = eUp;
+		}
+		else if (this->passwordPositionBuffer[currentPosition] == DownJoystickState::getInstance()) 
+		{
+			tempBuffer[currentPosition] = eDown;
+		}
+		else
+		{
+			tempBuffer[currentPosition] = eIdle;
+		}	
+		if ( EEPROM.read(currentPosition) != tempBuffer[currentPosition] )
+		{
+			delete[] tempBuffer;
+			return false;
+		}
+		_delay_ms(1000);
+	}
+	delete[] tempBuffer;
+	return true;
+}
+
 void Joystick::printCurrentPositions(void)
 {
-	
 	Serial.println("You have entered the following positions: ");
 	for (uint8_t currentPosition = 0; currentPosition < this->passwordLength; ++currentPosition)
 	{
