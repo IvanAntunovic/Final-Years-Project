@@ -90,6 +90,7 @@ int8_t Joystick::logPassword(void)
 	
 	if (this->passwordPositionBuffer[3] != NULL)
 	{
+		this->storePasswordInEEPROM();
 		return JOYSTICK_LOG_PASSWORD_SET;
 	}
 	return JOYSTICK_LOG_PASSWORD_NOT_SET;
@@ -101,10 +102,10 @@ void Joystick::storePasswordPositionInEEPROM()
 	
 	bufferFreeIndexNum = getBufferFreeIndex();
 	this->passwordPositionBuffer[bufferFreeIndexNum] = this->currentState;
+	this->currentState->toString();
 	if ( bufferFreeIndexNum == JOYSTICK_NOK )
 	{
 		this->currentMode = PasswordVerificationJoystickMode::getInstance();
-		this->storePasswordInEEPROM();
 	}
 }
 
@@ -131,22 +132,22 @@ void Joystick::storePasswordInEEPROM(void)
 	{
 		if (this->passwordPositionBuffer[currentPosition] == RightJoystickState::getInstance())
 		{
-			Serial.println("Right");
+			Serial.println("EEPROM Stored Right");
 			EEPROM.write(currentPosition, eRight);
 		}
 		else if (this->passwordPositionBuffer[currentPosition] == LeftJoystickState::getInstance())
 		{
-			Serial.println("Left");
+			Serial.println("EEPROM Stored Left");
 			EEPROM.write(currentPosition, eLeft);
 		}
 		else if (this->passwordPositionBuffer[currentPosition] == UpJoystickState::getInstance())
 		{
-			Serial.println("Up");
+			Serial.println("EEPROM Stored Up");
 			EEPROM.write(currentPosition, eUp);
 		}
 		else if (this->passwordPositionBuffer[currentPosition] == DownJoystickState::getInstance()) 
 		{
-			Serial.println("Down");
+			Serial.println("EEPROM Stored Down");
 			EEPROM.write(currentPosition, eDown);
 		}
 		else

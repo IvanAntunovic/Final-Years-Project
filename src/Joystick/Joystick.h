@@ -32,7 +32,6 @@ public:
 	
 	JoystickMode* getCurrentMode() {return this->currentMode;}
 	JoystickState* getCurrentState() {return this->currentState;}
-	void storePasswordPositionInEEPROM();
 	
 	uint8_t getPasswordLength() {return this->passwordLength;}
 	
@@ -42,11 +41,14 @@ public:
 	void changeState(JoystickState* newState);
 	void printCurrentPositions(void);
 	
+	friend class IdleJoystickState;
+	
 private:
 	bool isEqualToEEPROM(void);
 	void storePasswordInEEPROM(void);
 	void changeMode(uint8_t newMode);
 	int8_t getBufferFreeIndex();
+	void storePasswordPositionInEEPROM();
 };
 
 #endif // !_JOYSTICK_H_
