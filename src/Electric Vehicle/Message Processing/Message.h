@@ -4,6 +4,12 @@
 #include <stdint.h>
 #include <string.h>
 
+/** _________________________________________________
+ * |     |              |        |      |      |     |
+ * | STX | MESSAGE TYPE | LENGTH | DATA | '\0' | ETX |
+ * |_____|______________|________|______|______|_____|
+ */
+
 class Message
 {
 	private:
