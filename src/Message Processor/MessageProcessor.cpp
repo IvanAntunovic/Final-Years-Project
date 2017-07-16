@@ -13,7 +13,7 @@ MessageProcessor::MessageProcessor(SerialPort* serialPort)
   this->messageEncoder = new MessageEncoder();
   this->messageDeserialization = new MessageDeserialization();
   this->messageDecoder = new MessageDecoder();
-  this->processedMessage = new Message(0, 0, NULL);
+
 }
 
 MessageProcessor::~MessageProcessor()
@@ -22,7 +22,7 @@ MessageProcessor::~MessageProcessor()
   delete this->messageEncoder;
   delete this->messageDeserialization;
   delete this->messageDecoder;
-  delete this->processedMessage;
+
 }
 
 int8_t MessageProcessor::processTransmitData(uint8_t dataType, uint8_t dataLength, uint8_t* dataBuffer)
@@ -49,7 +49,7 @@ int8_t MessageProcessor::processTransmitData(uint8_t dataType, uint8_t dataLengt
 	return MESSAGE_PROCESSOR_OK;
 }
 
-Message* MessageProcessor::processReceivedData(void)
+Message MessageProcessor::processReceivedData(void)
 {
 	uint8_t receivedByte;
 	
@@ -66,11 +66,9 @@ Message* MessageProcessor::processReceivedData(void)
 		receieveBufferLen = this->messageDeserialization->getReceiveBufferLen();
 		receieveBuffer = new uint8_t[receieveBufferLen];
 		retVal = this->messageDeserialization->getDeserializedBuffer(receieveBuffer, receieveBufferLen);
-		Message message = this->messageDecoder->decode( receieveBuffer, receieveBufferLen );
-			
-	    return &message;
-		}
+		return this->messageDecoder->decode( receieveBuffer, receieveBufferLen );
+	  }
 	}
-	return NULL;
+	return Message(0, 0, NULL);
 }
 

@@ -14,7 +14,6 @@ class SerialPort;
 class MessageProcessor
 {
   private:
-    Message* processedMessage;
     SerialPort* serialPort;
     MessageSerialization* messageSerialization;
     MessageEncoder* messageEncoder;
@@ -25,7 +24,7 @@ class MessageProcessor
     MessageProcessor(SerialPort* serialPort);
     ~MessageProcessor();
     int8_t processTransmitData(uint8_t dataType, uint8_t dataLength, uint8_t* dataBuffer);
-    Message* processReceivedData(void);
+    Message processReceivedData(void);
 };
 
 #endif
