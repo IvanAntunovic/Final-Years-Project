@@ -16,8 +16,8 @@ class Message;
 
 class MessageDecoder
 {
-	public: 
-		Message decode(uint8_t* deserializedBuffer, uint8_t deserializedBufferLen);	
+  public: 
+    Message decode(uint8_t* deserializedBuffer, uint8_t deserializedBufferLen);	
 };
 
 #endif

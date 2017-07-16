@@ -1,4 +1,3 @@
-
 /*
  * MessageDecoder.cpp
  *
@@ -11,20 +10,20 @@
 
 Message MessageDecoder::decode(uint8_t* deserializedBuffer, uint8_t deserializedBufferLen)
 {
-	uint8_t dataType;
-	uint8_t dataLength;
-	uint8_t* data;
+   uint8_t dataType;
+   uint8_t dataLength;
+   uint8_t* data;
 	
-	dataType = deserializedBuffer[MESSAGE_DATA_TYPE_INDEX];
-	dataLength = deserializedBuffer[MESSAGE_DATA_LENGTH_INDEX];
-	data = new uint8_t[ dataLength ];
-	//if ( data == NULL )
-	//{
-		//return NULL;
-	//}
-	memcpy( &data[0], &deserializedBuffer[ MESSAGE_DATA_START_INDEX ], dataLength );
-	Message message( dataType, dataLength, data);
-	delete data;
+   dataType = deserializedBuffer[MESSAGE_DATA_TYPE_INDEX];
+   dataLength = deserializedBuffer[MESSAGE_DATA_LENGTH_INDEX];
+   data = new uint8_t[ dataLength ];
+   //if ( data == NULL )
+   //{
+	  //return NULL;
+   //}
+   memcpy( &data[0], &deserializedBuffer[ MESSAGE_DATA_START_INDEX ], dataLength );
+   Message message( dataType, dataLength, data);
 	
-	return message;	
+   delete data;
+   return message;	
 }

@@ -8,20 +8,21 @@
 
 MessageProcessor::MessageProcessor(SerialPort* serialPort) 
 {
-	this->serialPort = serialPort;
-	this->messageSerialization = new MessageSerialization();
-	this->messageEncoder = new MessageEncoder();
-	this->messageDeserialization = new MessageDeserialization();
-	this->messageDecoder = new MessageDecoder();
-	this->processedMessage = new Message(0, 0, NULL);
+  this->serialPort = serialPort;
+  this->messageSerialization = new MessageSerialization();
+  this->messageEncoder = new MessageEncoder();
+  this->messageDeserialization = new MessageDeserialization();
+  this->messageDecoder = new MessageDecoder();
+  this->processedMessage = new Message(0, 0, NULL);
 }
 
 MessageProcessor::~MessageProcessor()
 {
-	delete this->messageSerialization;
-	delete this->messageEncoder;
-	delete this->messageDeserialization;
-	delete this->messageDecoder;
+  delete this->messageSerialization;
+  delete this->messageEncoder;
+  delete this->messageDeserialization;
+  delete this->messageDecoder;
+  delete this->processedMessage;
 }
 
 int8_t MessageProcessor::processTransmitData(uint8_t dataType, uint8_t dataLength, uint8_t* dataBuffer)
@@ -41,7 +42,6 @@ int8_t MessageProcessor::processTransmitData(uint8_t dataType, uint8_t dataLengt
 	  return MESSAGE_PROCESSOR_NULL_PTR;
 	}
 	
-	//this->pcSerialPort->println(serializedBuffer);
 	this->serialPort->writeString(serializedBuffer);
 	
 	delete encodedMessage;
@@ -49,34 +49,26 @@ int8_t MessageProcessor::processTransmitData(uint8_t dataType, uint8_t dataLengt
 	return MESSAGE_PROCESSOR_OK;
 }
 
-
 Message* MessageProcessor::processReceivedData(void)
 {
 	uint8_t receivedByte;
 	
 	if ( this->serialPort->available() )
 	{
-		this->serialPort->readBytes(&receivedByte, 1);
-		this->messageDeserialization->deserialize(receivedByte);
-		if ( this->messageDeserialization->isDeserialized() == MESSAGE_DESERIALIZATION_OK )
-		{
-			int8_t receieveBufferLen;
-			uint8_t* receieveBuffer;
-			int8_t retVal;
-			uint8_t* tempDataBuffer;
+	  this->serialPort->readBytes(&receivedByte, 1);
+	  this->messageDeserialization->deserialize(receivedByte);
+	  if ( this->messageDeserialization->isDeserialized() == MESSAGE_DESERIALIZATION_OK )
+	  {
+	    int8_t receieveBufferLen;
+		uint8_t* receieveBuffer;
+		int8_t retVal;
 			
-			receieveBufferLen = this->messageDeserialization->getReceiveBufferLen();
-			receieveBuffer = new uint8_t[receieveBufferLen];
-			retVal = this->messageDeserialization->getDeserializedBuffer(receieveBuffer, receieveBufferLen);
-			Message message = this->messageDecoder->decode( receieveBuffer, receieveBufferLen );
-		
+		receieveBufferLen = this->messageDeserialization->getReceiveBufferLen();
+		receieveBuffer = new uint8_t[receieveBufferLen];
+		retVal = this->messageDeserialization->getDeserializedBuffer(receieveBuffer, receieveBufferLen);
+		Message message = this->messageDecoder->decode( receieveBuffer, receieveBufferLen );
 			
-			tempDataBuffer = (uint8_t*)(message.getDataBuffer());
-		
-			
-			delete tempDataBuffer;
-			
-			return &message;
+	    return &message;
 		}
 	}
 	return NULL;

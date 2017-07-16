@@ -8,8 +8,8 @@ class Message;
 
 class MessageSerialization
 {
-	public:
-		const char* serialize(Message* serialMessage);
+  public:
+    const char* serialize(Message* serialMessage);
 };
 
 #endif
