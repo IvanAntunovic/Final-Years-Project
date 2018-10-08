@@ -2,7 +2,7 @@
  * RC_CAR_Working.cpp
  *
  * Created: 5/28/2017 10:52:51 AM
- * Author : fairenough
+ * Author : fairenough (Ivan Antunović)
  */ 
 #define F_CPU 16000000UL
 #include <avr/io.h>
